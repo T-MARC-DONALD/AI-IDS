@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI IDS Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    :root {
+      --bg: #121212;
+      --card: #1e1e1e;
+      --accent: #00c6ff;
+      --danger: #ff3b3b;
+      --safe: #00c853;
+      --text: #f0f0f0;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 1000px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--accent);
+    }
+    .card {
+      background: var(--card);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    .result {
+      background: #222;
+      padding: 1rem;
+      border-radius: 6px;
+      white-space: pre-wrap;
+      color: #ccc;
+    }
+    textarea, input[type="file"] {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: none;
+      background: #333;
+      color: var(--text);
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.6rem 1.2rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.6rem;
+      border-bottom: 1px solid #444;
+      text-align: left;
+    }
+    tr.attack {
+      background: #330000;
+    }
+    tr.normal {
+      background: #003300;
+    }
+    .badge {
+      padding: 0.3em 0.6em;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-weight: bold;
+    }
+    .badge.attack {
+      background: var(--danger);
+      color: white;
+    }
+    .badge.normal {
+      background: var(--safe);
+      color: white;
+    }
+    #alertBanner {
+      display: none;
+      background: var(--danger);
+      color: white;
+      padding: 1rem;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+    }
+    #sniffStatus {
+      display: flex;
+      align-items: center;
+      margin-top: 1rem;
+    }
+    #statusLight {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🛡️ AI Intrusion Detection Dashboard</h1>
+
+    <div id="alertBanner">🚨 Attack detected!</div>
+
+    <section class="card">
+      <h2>📁 Upload CSV</h2>
+      <form id="fileForm">
+        <input type="file" id="csvFile" accept=".csv" />
+        <button type="submit">Upload & Predict</button>
+      </form>
+      <pre id="fileResult" class="result"></pre>
+    </section>
+
+    <section class="card">
+      <h2>🧪 Predict Single Sample</h2>
+      <textarea id="singleSample" rows="4" placeholder="feature1,feature2,..."></textarea>
+      <button id="singlePredict">Predict Sample</button>
+      <pre id="singleResult" class="result"></pre>
+    </section>
+
+    <section class="card">
+      <h2>📡 Live IDS Monitor</h2>
+      <div id="liveSummary"></div>
+      <table id="eventTable">
+        <thead>
+          <tr>
+            <th>Time</th><th>Type</th><th>Service</th><th>Src IP</th><th>Dst IP</th><th>Protocol</th><th>Flag</th><th>Bytes</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button id="toggleBtn">Start Sniffing</button>
+      <div id="sniffStatus">
+        <div id="statusLight" style="background-color: red;"></div>
+        <span id="statusText">Sniffing Off</span>
+      </div>
+    </section>
+
+    <footer style="text-align:center; margin-top:2rem;">
+      <small>Built by LIMITLESS — Cybersecurity IDS powered by AI</small>
+    </footer>
+  </div>
+
+  <script>
+    function pretty(json) {
+      return JSON.stringify(json, null, 2);
+    }
+
+    let sniffing = false;
+
+    function updateStatusUI() {
+      const light = document.getElementById("statusLight");
+      const text = document.getElementById("statusText");
+      if (sniffing) {
+        light.style.backgroundColor = "green";
+        text.textContent = "Sniffing On";
+      } else {
+        light.style.backgroundColor = "red";
+        text.textContent = "Sniffing Off";
+      }
+    }
+
+    document.getElementById("toggleBtn").onclick = async () => {
+      const res = await fetch("/toggle-sniffing", { method: "POST" });
+      const data = await res.json();
+      sniffing = data.sniffing;
+      document.getElementById("toggleBtn").innerText = sniffing ? "Stop Sniffing" : "Start Sniffing";
+      updateStatusUI();
+    };
+
+    document.getElementById('fileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const file = document.getElementById('csvFile').files[0];
+      if (!file) return alert('Choose a CSV file first.');
+      const form = new FormData();
+      form.append('file', file);
+      document.getElementById('fileResult').textContent = 'Uploading and predicting...';
+      try {
+        const res = await fetch('/predict-file', { method: 'POST', body: form });
+        const data = await res.json();
+        document.getElementById('fileResult').textContent = pretty(data);
+      } catch (err) {
+        document.getElementById('fileResult').textContent = 'Error: ' + err;
+      }
+    });
+
+    document.getElementById('singlePredict').addEventListener('click', async () => {
+      const txt = document.getElementById('singleSample').value.trim();
+      if (!txt) return alert('Paste one comma-separated sample line.');
+      try {
+        const res = await fetch('/predict-single', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sample: txt })
+        });
+        const data = await res.json();
+        document.getElementById('singleResult').textContent = pretty(data);
+      } catch (err) {
+        document.getElementById('singleResult').textContent = 'Error: ' + err;
+      }
+    });
+
+    async function fetchLiveStatus() {
+      try {
+        const res = await fetch('/live-status');
+        const data = await res.json();
+        const summary = data.summary;
+        const recent = data.recent;
+
+        document.getElementById('liveSummary').innerHTML = `
+          <p>Total: ${summary.total} |
+            <span class="badge normal">Normal: ${summary.normal}</span> |
+            <span class="badge attack">Attack: ${summary.attack}</span>
+          </p>
+        `;
+
+        const hasAlert = recent.some(e => e.alert === true);
+        document.getElementById("alertBanner").style.display = hasAlert ? "block" : "none";
+
+        const tbody = document.querySelector('#eventTable tbody');
+        tbody.innerHTML = '';
+        recent.forEach(item => {
+          const row = document.createElement('tr');
+          row.className = item.pred === 1 ? "attack" : "normal";
+          row.innerHTML = `
+            <td>${new Date(item.ts * 1000).toLocaleTimeString()}</td>
+            <td>${item.pred === 1 ? "Attack" : "Normal"}</td>
+            <td>${item.service}</td
+                          <td>${item.dst_ip || "?"}</td>
+            <td>${item.protocol || "?"}</td>
+            <td>${item.flag || "?"}</td>
+            <td>${item.src_bytes}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        document.getElementById('liveSummary').textContent = 'Error loading live status';
+      }
+    }
+
+    setInterval(fetchLiveStatus, 5000);
+    fetchLiveStatus();
+    updateStatusUI();
+  </script>
+</body>
+</html>
