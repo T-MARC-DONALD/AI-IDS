@@ -1,36 +1,35 @@
 
 ---
 
-# 🛡️ Real-Time Intrusion Detection System (Live IDS)
+ Real-Time Intrusion Detection System (Live IDS)
 
 A modular, Flask-powered real-time Intrusion Detection System (IDS) that captures live network traffic, extracts behavioral features, and classifies packets using a trained machine learning model. Designed for security research, lab automation, and forensic analysis.
 
 ---
+ Features
 
-## 🚀 Features
-
-- 🔍 **Live Packet Sniffing** using Scapy
-- 🧠 **ML-Based Classification** (Normal vs. Attack) with pre-trained model
-- 📊 **Real-Time Dashboard** with scrollable event log and visual alerts
-- 🔔 **Email Notifications** on attack detection
-- 🧠 **Stateful Feature Extraction** (e.g., rolling `count`, `serror_rate`)
-- 📁 **CSV Upload Support** for offline prediction
-- 🌐 **Auto-detects Active Network Interface**
-
----
-
-## 🧠 How It Works
-
-1. **Packet Capture**: Scapy sniffs packets on the active interface.
-2. **Feature Extraction**: Each packet is converted into a 41-feature vector (NSL-KDD style), including protocol, service, flags, byte counts, and rolling metrics.
-3. **Preprocessing**: Categorical fields are encoded, numeric fields scaled using saved encoders and scalers.
-4. **Prediction**: A trained ML model (e.g., RandomForest) classifies the packet as normal (`0`) or attack (`1`).
-5. **Dashboard Update**: The result is pushed to a live dashboard with color-coded rows and optional alert banners.
-6. **Email Alert**: If an attack is detected, an email is sent with timestamp, service, and source IP.
+-  **Live Packet Sniffing** using Scapy
+-  **ML-Based Classification** (Normal vs. Attack) with pre-trained model
+-  **Real-Time Dashboard** with scrollable event log and visual alerts
+-  **Email Notifications** on attack detection
+-  **Stateful Feature Extraction** (e.g., rolling `count`, `serror_rate`)
+-  **CSV Upload Support** for offline prediction
+-  **Auto-detects Active Network Interface**
 
 ---
 
-## 🛠️ Installation & Setup
+ How It Works
+
+1. Packet Capture: Scapy sniffs packets on the active interface.
+2. Feature Extraction: Each packet is converted into a 41-feature vector (NSL-KDD style), including protocol, service, flags, byte counts, and rolling metrics.
+3. Preprocessing: Categorical fields are encoded, numeric fields scaled using saved encoders and scalers.
+4. Prediction: A trained ML model (e.g., RandomForest) classifies the packet as normal (`0`) or attack (`1`).
+5. Dashboard Update: The result is pushed to a live dashboard with color-coded rows and optional alert banners.
+6. Email Alert: If an attack is detected, an email is sent with timestamp, service, and source IP.
+
+---
+
+ Installation & Setup
 
 ```bash
 # Clone the repo
@@ -52,7 +51,7 @@ python live_ids.py
 
 ---
 
-## 📦 Required Files
+ Required Files
 
 - `ids_model.joblib` – Trained ML model (e.g., RandomForest)
 - `scaler.joblib` – Scaler used during training
@@ -60,7 +59,7 @@ python live_ids.py
 
 ---
 
-## 📬 Email Alert Setup
+ Email Alert Setup
 
 Edit these variables in `live_ids.py`:
 
@@ -74,7 +73,7 @@ Use an **App Password** if using Gmail with 2FA.
 
 ---
 
-## 🧪 Testing
+  Testing
 
 - Use `curl` or Scapy to simulate traffic:
   ```python
@@ -87,7 +86,7 @@ Use an **App Password** if using Gmail with 2FA.
 
 ---
 
-## 🐞 Known Issues & Fixes
+  Known Issues & Fixes
 
 | Issue | Cause | Fix |
 |-------|-------|-----|
@@ -97,8 +96,7 @@ Use an **App Password** if using Gmail with 2FA.
 | Dashboard not updating | JavaScript polling not active | Ensure `pollStatus()` is called with `setInterval()` |
 
 ---
-
-## 📈 Roadmap Ideas
+ Roadmap Ideas
 
 - [ ] Modal popups for full packet details
 - [ ] CSV export of event log
@@ -108,7 +106,7 @@ Use an **App Password** if using Gmail with 2FA.
 
 ---
 
-## 👨‍💻 Author
+ Author
 
 Built by TONGA NOUDJA MARC-DONALD — cybersecurity Analyst, system Security architect, and automation enthusiast.  
 Modular, extensible, and designed for clarity, reproducibility, and real-time insight.
