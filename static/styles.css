@@ -1,0 +1,134 @@
+/* ============================================================
+   AI IDS Dashboard — styles.css
+   Loaded by /static/styles.css (previously missing, causing
+   the dashboard to render unstyled).
+   The <style> block inside index.html already defines the core
+   variables and layout; this file layers on top with polish,
+   animations, and responsive tweaks.
+   ============================================================ */
+
+/* ---------- Reset & base ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Typography ---------- */
+h1 { font-size: 2rem; letter-spacing: -0.5px; }
+h2 { font-size: 1.2rem; margin: 0 0 1rem; color: var(--accent); }
+
+/* ---------- Cards ---------- */
+.card {
+  transition: box-shadow 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 0 20px rgba(0, 198, 255, 0.15);
+}
+
+/* ---------- Inputs ---------- */
+textarea,
+input[type="file"],
+input[type="text"] {
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 0.9rem;
+  transition: border 0.2s;
+  border: 1px solid #444;
+  outline: none;
+}
+textarea:focus,
+input[type="text"]:focus {
+  border-color: var(--accent);
+}
+
+/* ---------- Buttons ---------- */
+button {
+  transition: background 0.2s, transform 0.1s;
+  letter-spacing: 0.3px;
+}
+button:hover {
+  filter: brightness(1.15);
+}
+button:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Alert banner ---------- */
+#alertBanner {
+  animation: pulse 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.75; }
+}
+
+/* ---------- Status light ---------- */
+#statusLight {
+  transition: background-color 0.4s ease;
+  box-shadow: 0 0 6px currentColor;
+}
+
+/* ---------- Table ---------- */
+table {
+  font-size: 0.88rem;
+}
+thead th {
+  color: var(--accent);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 1;
+}
+tbody tr {
+  transition: opacity 0.15s;
+}
+tbody tr:hover {
+  opacity: 0.85;
+}
+
+/* ---------- Badges ---------- */
+.badge {
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ---------- Result pre ---------- */
+.result {
+  font-family: 'Consolas', 'Menlo', monospace;
+  font-size: 0.85rem;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #333;
+}
+
+/* ---------- Scrollbar (WebKit) ---------- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #1a1a1a; }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ---------- Footer ---------- */
+footer small {
+  color: #666;
+  font-size: 0.78rem;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  body  { padding: 1rem; }
+  h1    { font-size: 1.4rem; }
+  table { display: block; overflow-x: auto; }
+}
