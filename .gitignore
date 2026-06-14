@@ -1,0 +1,21 @@
+.env
+alert_channels.local.json
+__pycache__/
+.venv/
+cic_env/
+processed/
+*.zip
+*.err.log
+*.out.log
+MachineLearningCVE/
+tmp_*
+
+# Model artifacts — download via download_models.sh or download_models.ps1
+models/*.joblib
+
+# Old v1 artifacts — no longer used in v2.0
+ids_model.joblib
+scaler.joblib
+flag_encoder.joblib
+protocol_type_encoder.joblib
+service_encoder.joblib
