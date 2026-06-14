@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% from '_icons.html' import icon %}
+{% from '_nav.html' import page_nav %}
+{% block title %}CSV Prediction | AI-IDS Watchfloor{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="branding">
+    <p class="subtitle">Watchfloor</p>
+    <h1>CSV Prediction</h1>
+  </div>
+
+  <div class="topbar-meta">
+    <span class="pill">{{ feature_count }} features</span>
+    <a class="page-nav__link" href="{{ url_for('index') }}">Return to dashboard</a>
+  </div>
+</header>
+
+{{ page_nav('csv') }}
+
+<section class="page-layout page-layout--narrow">
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">Batch scoring</p>
+        <h2 class="panel__title">Upload precomputed flow features</h2>
+      </div>
+      <span class="pill">Upload</span>
+    </div>
+    <div class="panel__body">
+      <p class="page-copy">Upload a CSV containing {{ feature_count }} CICFlowMeter-style columns. If the header is absent, the column order must still match the trained model schema.</p>
+      <label class="dropzone" id="csvDropzone" for="csvFileInput">
+        <span class="dropzone__title">Drop CSV here or browse</span>
+        <span class="dropzone__hint">{{ feature_count }} features per row</span>
+        <input id="csvFileInput" type="file" accept=".csv" class="visually-hidden" />
+      </label>
+      <div class="controls controls--stacked">
+        <div class="field">
+          <label for="csvFileInputMirror">Selected file</label>
+          <input id="csvFileInputMirror" type="text" value="No file selected" readonly />
+        </div>
+        <button class="button--accent" id="predictCsvBtn" type="button">
+          {{ icon('upload') }}
+          <span>Predict from CSV</span>
+        </button>
+      </div>
+      <pre class="result-output" id="csvResult">Awaiting CSV upload.</pre>
+    </div>
+  </section>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+{% endblock %}

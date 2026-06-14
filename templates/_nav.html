@@ -1,0 +1,8 @@
+{% macro page_nav(active) -%}
+<nav class="page-nav" aria-label="Primary">
+  <a class="page-nav__link{% if active == 'dashboard' %} is-active{% endif %}" href="{{ url_for('index') }}">Dashboard</a>
+  <a class="page-nav__link{% if active == 'alerts' %} is-active{% endif %}" href="{{ url_for('alerts_page') }}">Alerts</a>
+  <a class="page-nav__link{% if active == 'csv' %} is-active{% endif %}" href="{{ url_for('csv_prediction_page') }}">CSV prediction</a>
+  <a class="page-nav__link{% if active == 'sample' %} is-active{% endif %}" href="{{ url_for('sample_prediction_page') }}">Single sample</a>
+</nav>
+{%- endmacro %}
