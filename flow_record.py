@@ -394,7 +394,7 @@ class FlowRecord:
         self._finalize_active_idle()
         self._finalize_bulk()
 
-        duration = max(self.last_seen - self.start_time, 0.0)
+        duration = max(self.last_seen - self.start_time, 1e-6)
         # CICFlowMeter expresses Flow Duration in microseconds
         duration_us = duration * 1_000_000
 
