@@ -89,7 +89,7 @@ class FlowRecord:
     """
 
     # Flow considered expired if no packet seen for this many seconds
-    ACTIVITY_TIMEOUT = 120.0
+    ACTIVITY_TIMEOUT = 30.0
 
     def __init__(self, src_ip, src_port, dst_ip, dst_port, protocol, first_pkt_time):
         self.src_ip = src_ip

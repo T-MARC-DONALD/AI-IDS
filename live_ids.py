@@ -53,7 +53,7 @@ if not load_dotenv():
     print("[Config] python-dotenv not installed or no .env file found - using process environment only.")
 
 MODELS_DIR = os.environ.get("MODELS_DIR", "./models")
-FLOW_ACTIVITY_TIMEOUT = float(os.environ.get("FLOW_ACTIVITY_TIMEOUT", "120"))
+FLOW_ACTIVITY_TIMEOUT = float(os.environ.get("FLOW_ACTIVITY_TIMEOUT", "30"))
 FLOW_SWEEP_INTERVAL = float(os.environ.get("FLOW_SWEEP_INTERVAL", "5"))
 APP_DEBUG = os.environ.get("FLASK_DEBUG", "").strip().lower() in {"1", "true", "yes", "on"}
 
