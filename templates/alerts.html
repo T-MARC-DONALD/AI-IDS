@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% from '_nav.html' import page_nav %}
+{% block title %}Alert Channel | AI-IDS Watchfloor{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="branding">
+    <p class="subtitle">Watchfloor</p>
+    <h1>Alert Channel</h1>
+  </div>
+
+  <div class="topbar-meta">
+    <span class="pill">{{ 'Multi-channel armed' if alert_summary.enabled_count else ('Channels saved' if alert_summary.configured_count else 'Log only mode') }}</span>
+    <a class="page-nav__link" href="{{ url_for('index') }}">Return to dashboard</a>
+  </div>
+</header>
+
+{{ page_nav('alerts') }}
+
+<section class="page-layout">
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">Delivery status</p>
+        <h2 class="panel__title">Attack broadcast readiness</h2>
+      </div>
+      <span class="pill" id="alertChannelPill">{{ 'Armed' if alert_summary.enabled_count else ('Channels disabled' if alert_summary.configured_count else 'Configure channels') }}</span>
+    </div>
+    <div class="panel__body">
+      <p class="page-copy">This page tracks the outbound alert channels for the live IDS. ATTACK flows can be broadcast through email, Telegram, and WhatsApp when those channels are configured. Use the test action to verify delivery without waiting for a live attack.</p>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <span class="summary-item__label">Channel mode</span>
+          <span class="summary-item__value" id="statusChannelMode">{{ 'Multi-channel broadcast' if alert_summary.enabled_count else ('Channels configured but disabled' if alert_summary.configured_count else 'Log only until a channel is configured') }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item__label">Current interface</span>
+          <span class="summary-item__value" id="statusInterface">auto</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item__label">Last detected attack</span>
+          <span class="summary-item__value" id="statusLastAttack">None yet</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item__label">Configured channels</span>
+          <span class="summary-item__value" id="statusConfiguredCount">{{ alert_summary.enabled_count }} enabled / {{ alert_summary.configured_count }} configured</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item__label">Last dispatch</span>
+          <span class="summary-item__value" id="statusLastDispatch">{{ 'No dispatch yet' if not alert_summary.last_dispatch_ts else alert_summary.last_dispatch_subject }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-item__label">Channel state</span>
+          <span class="summary-item__value" id="statusChannelState">Waiting for live status</span>
+        </div>
+      </div>
+      <div class="inline-meta">
+        <button class="button--accent" id="sendAllAlertsBtn" type="button">Send test to all channels</button>
+        <span id="alertDispatchSummary">{{ 'Ready to test configured channels.' if alert_summary.configured_count else 'No channel is configured yet.' }}</span>
+      </div>
+      <pre class="result-output" id="alertDispatchResult">No test sent yet.</pre>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">Delivery methods</p>
+        <h2 class="panel__title">Channel lineup</h2>
+      </div>
+      <span class="pill">{{ alert_summary.configured_count }} configured</span>
+    </div>
+    <div class="panel__body channel-grid" id="alertChannelsGrid">
+      {% for channel in alert_channels %}
+      <article class="channel-card" data-channel="{{ channel.key }}">
+        <div class="channel-card__header">
+          <div>
+            <p class="eyebrow">{{ channel.transport }}</p>
+            <h3 class="channel-card__title">{{ channel.label }}</h3>
+          </div>
+          <span class="status-badge {{ 'is-ready' if channel.configured and channel.enabled else ('is-paused' if channel.configured else 'is-offline') }}" id="channelBadge-{{ channel.key }}">{{ 'Enabled' if channel.configured and channel.enabled else ('Disabled' if channel.configured else 'Not configured') }}</span>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-item__label">Destination</span>
+            <span class="summary-item__value" id="channelDestination-{{ channel.key }}">{{ channel.destination or 'Not set' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item__label">Last result</span>
+            <span class="summary-item__value" id="channelLastResult-{{ channel.key }}">{{ channel.last_result or 'No attempts yet' }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item__label">Last attempt</span>
+            <span class="summary-item__value" id="channelLastAttempt-{{ channel.key }}">{{ 'Never' if not channel.last_attempt_ts else channel.last_attempt_ts }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-item__label">Setup hint</span>
+            <span class="summary-item__value" id="channelHint-{{ channel.key }}">{{ channel.hint }}</span>
+          </div>
+        </div>
+        <form class="channel-form" data-alert-config-form data-channel="{{ channel.key }}">
+          <label class="toggle-field" for="channelEnabled-{{ channel.key }}">
+            <input id="channelEnabled-{{ channel.key }}" name="enabled" type="checkbox" {% if channel.enabled %}checked{% endif %}>
+            <span>Enable this channel for live attack alerts</span>
+          </label>
+          {% if channel.server_managed and channel.server_managed_copy %}
+          <p class="channel-form__copy">{{ channel.server_managed_copy }}</p>
+          {% endif %}
+          {% if channel.key == 'telegram' %}
+          <div class="channel-form__helper">
+            <p class="channel-form__copy">This bot receives the alerts: <a class="channel-form__link" href="https://t.me/limitidsbot" target="_blank" rel="noreferrer">https://t.me/limitidsbot</a>. Open it in Telegram, press Start, then use the helper below to load the latest recipient chat ID.</p>
+            <div class="channel-card__actions">
+              <a class="button-link button--ghost" href="https://t.me/limitidsbot" target="_blank" rel="noreferrer">Open bot</a>
+              <button class="button--ghost" type="button" data-telegram-discover>Use latest chat ID</button>
+            </div>
+          </div>
+          {% endif %}
+          <div class="channel-form__grid">
+            {% for field in channel.fields %}
+            {% if field.editable %}
+            <label class="field" for="field-{{ channel.key }}-{{ loop.index }}">
+              <span>{{ field.label }}</span>
+              <input
+                id="field-{{ channel.key }}-{{ loop.index }}"
+                name="{{ field.env }}"
+                type="{{ field.input_type }}"
+                value="{{ field.value }}"
+                {% if field.secret and field.configured %}placeholder="Stored value saved"{% endif %}
+                {% if field.required %}required{% endif %}
+              >
+              {% if field.secret %}
+              <span class="field__meta" id="fieldSecretState-{{ channel.key }}-{{ field.env }}">{{ 'Saved secret will be reused if you leave this blank.' if field.configured else 'Enter the secret to configure this channel.' }}</span>
+              {% endif %}
+            </label>
+            {% endif %}
+            {% endfor %}
+          </div>
+          <div class="channel-card__actions">
+            <button class="button--accent" type="submit">Save settings</button>
+            <button class="button--ghost" type="button" data-alert-test-button="{{ channel.key }}">Send test</button>
+          </div>
+          <span class="channel-feedback" id="channelFeedback-{{ channel.key }}">{% if channel.enabled and channel.configured %}Ready to send alerts.{% elif channel.configured %}Configured but disabled.{% else %}Not configured yet.{% endif %}</span>
+        </form>
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <footer class="footer-note">Channel settings saved here are written to a local alert config file on this machine and take effect immediately.</footer>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+{% endblock %}

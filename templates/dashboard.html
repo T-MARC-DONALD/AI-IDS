@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% from '_icons.html' import icon %}
+{% from '_nav.html' import page_nav %}
+{% block title %}AI-IDS Watchfloor{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="branding">
+    <p class="subtitle">Watchfloor</p>
+    <h1>AI-IDS</h1>
+  </div>
+
+  <div class="topbar-meta">
+    <span class="mono" id="activeInterface">iface: auto</span>
+    <span class="status-chip" id="captureChip" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span id="captureChipLabel">IDLE</span>
+    </span>
+    <button class="button--ghost" id="toggleSniffingBtn" type="button">
+      {{ icon('power') }}
+      <span>Start capture</span>
+    </button>
+  </div>
+</header>
+
+{{ page_nav('dashboard') }}
+
+<section class="tripwire" id="tripwirePanel" aria-live="polite" role="status">
+  <canvas class="tripwire__canvas is-armed" id="tripwireCanvas" width="1400" height="72" aria-hidden="true"></canvas>
+  <div class="tripwire__layout">
+    <div class="tripwire__label">
+      <span class="status-dot" id="tripwireDot" aria-hidden="true"></span>
+      <span class="tripwire__state" id="tripwireLabel">TRIPWIRE · ARMED</span>
+    </div>
+    <div class="tripwire__meta">
+      <span id="tripwireStats">0 flows/min</span>
+      <span id="tripwireLastSeen">last classification: --:--:--</span>
+      <span id="tripwireAcknowledged">ack: not yet</span>
+    </div>
+    <div class="tripwire__actions">
+      <button class="button--accent" id="acknowledgeBtn" type="button">Acknowledge</button>
+    </div>
+  </div>
+  <span class="visually-hidden" id="tripwireAlertText">Tripwire armed</span>
+</section>
+
+<section class="page-grid" aria-label="Dashboard summary">
+  <div class="stats-grid">
+    <article class="stat-card">
+      <div class="stat-card__label">Packets seen</div>
+      <p class="stat-card__value" id="statPackets">0</p>
+      <div class="stat-card__meta" id="statPacketsMeta">0 active flows</div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__label">Active flows</div>
+      <p class="stat-card__value" id="statActiveFlows">0</p>
+      <div class="stat-card__meta">currently assembling</div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__label">Flagged</div>
+      <p class="stat-card__value is-threat" id="statFlagged">0</p>
+      <div class="stat-card__meta" id="statFlaggedMeta">attack verdicts</div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__label">Threat rate</div>
+      <p class="stat-card__value" id="statThreatRate">0.00%</p>
+      <div class="stat-card__meta" id="statThreatRateMeta">attack / total</div>
+    </article>
+    <article class="stat-card">
+      <div class="stat-card__label">Model</div>
+      <p class="stat-card__value" id="statModel">RandomForest</p>
+      <div class="stat-card__meta mono" id="statModelMeta">live classifier</div>
+    </article>
+  </div>
+
+  <div class="dashboard-main">
+    <section class="panel log-panel">
+      <div class="panel__header">
+        <div>
+          <p class="eyebrow">Live capture</p>
+          <h2 class="panel__title">Event log</h2>
+        </div>
+        <div class="inline-meta">
+          <span id="eventCount">0 events</span>
+          <span id="eventRate">0 flows/min</span>
+        </div>
+      </div>
+      <div class="panel__body">
+        <p class="panel__hint">Click any classified flow to open its full feature vector and verdict details.</p>
+        <div class="log-wrap">
+          <table id="eventTable">
+            <caption class="visually-hidden">Recent classified flows from the live intrusion detection stream.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Time</th>
+                <th scope="col">Src IP</th>
+                <th scope="col">Dst IP</th>
+                <th scope="col">Protocol</th>
+                <th scope="col" class="hide-sm">Packets</th>
+                <th scope="col">Verdict</th>
+                <th scope="col">Type</th>
+              </tr>
+            </thead>
+            <tbody id="eventRows" aria-live="polite" aria-relevant="additions text"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card-stack">
+      <section class="panel">
+        <div class="panel__header">
+          <div>
+            <p class="eyebrow">Capture control</p>
+            <h2 class="panel__title">Interface</h2>
+          </div>
+          <span class="pill">Live</span>
+        </div>
+        <div class="panel__body">
+          <div class="field">
+            <label for="ifaceSelect">Capture interface</label>
+            <select id="ifaceSelect"></select>
+          </div>
+          <button class="button--ghost" id="setIfaceBtn" type="button">Set interface</button>
+          <div class="inline-meta">
+            <span id="currentIface">Selected: auto</span>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <footer class="footer-note">AI-IDS Watchfloor dashboard</footer>
+</section>
+
+<div class="modal-backdrop" id="flowModalBackdrop" hidden>
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="flowModalTitle">
+    <div class="modal__header">
+      <div>
+        <p class="eyebrow">Flow details</p>
+        <h2 class="panel__title" id="flowModalTitle">Flow inspection</h2>
+      </div>
+      <button class="button--ghost modal__close" id="flowModalClose" type="button" aria-label="Close flow details">Close</button>
+    </div>
+    <div class="modal__body">
+      <div class="summary-grid" id="flowModalSummary"></div>
+      <div class="detail-drawer" id="flowModalContent"></div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+{% endblock %}

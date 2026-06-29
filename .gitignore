@@ -1,0 +1,20 @@
+.env
+.venv/
+cic_env/
+alert_channels.local.json
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+tmp_alert_config.json
+tmp_alert_validation.json
+server5000.out.log
+server5000.err.log
+
+MachineLearningCVE/
+files (2).zip
+
+processed/*.parquet
+processed/*.zip

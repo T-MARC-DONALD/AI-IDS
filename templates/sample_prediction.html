@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% from '_nav.html' import page_nav %}
+{% block title %}Single Sample | AI-IDS Watchfloor{% endblock %}
+
+{% block content %}
+<header class="topbar">
+  <div class="branding">
+    <p class="subtitle">Watchfloor</p>
+    <h1>Single Sample</h1>
+  </div>
+
+  <div class="topbar-meta">
+    <span class="pill">{{ feature_count }} values required</span>
+    <a class="page-nav__link" href="{{ url_for('index') }}">Return to dashboard</a>
+  </div>
+</header>
+
+{{ page_nav('sample') }}
+
+<section class="page-layout page-columns">
+  <section class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">Manual scoring</p>
+        <h2 class="panel__title">Predict a single flow sample</h2>
+      </div>
+      <span class="pill">{{ feature_count }} features</span>
+    </div>
+    <div class="panel__body">
+      <p class="page-copy">Paste one comma-separated feature row in the exact trained feature order. The API will run the binary attack detector first and only run attack-type classification when the binary result is ATTACK.</p>
+      <div class="field">
+        <label for="singleSampleInput">Feature row</label>
+        <textarea id="singleSampleInput" placeholder="feature1,feature2,..."></textarea>
+      </div>
+      <button class="button--accent" id="predictSingleBtn" type="button">Predict sample</button>
+      <pre class="result-output" id="singleResult">Paste one comma-separated feature row to classify it.</pre>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">Schema</p>
+        <h2 class="panel__title">Expected feature order</h2>
+      </div>
+      <span class="pill">Reference</span>
+    </div>
+    <div class="panel__body">
+      <p class="page-copy">Use this exact feature sequence when preparing a manual sample row.</p>
+      <div class="feature-list">
+        {% for feature in feature_columns %}
+          <span>{{ loop.index }}. {{ feature }}</span>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+</section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
+{% endblock %}
